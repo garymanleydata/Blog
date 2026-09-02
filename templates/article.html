@@ -1,6 +1,10 @@
 {% extends "base.html" %}
 {% block title %}{{ post.title }} - Data Leadership{% endblock %}
+
 {% block content %}
+<!-- Prism syntax highlighting stylesheet -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+
 <article class="post-content">
     <header class="post-header">
         {% if post.category %}
@@ -22,4 +26,8 @@
         {{ post.html | safe }}
     </div>
 </article>
+
+<!-- Prism syntax highlighting script -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
 {% endblock %}
