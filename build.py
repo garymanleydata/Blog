@@ -15,7 +15,7 @@ TEMPLATE_DIR = 'templates'
 STATIC_DIR = 'static'
 OUTPUT_DIR = '_site'
 BASE_PATH = '/Blog'
-SITE_URL = 'https://yourusername.github.io'  # Set to your GitHub Pages root domain
+SITE_URL = 'https://garymanleydata.github.io'  # Set to your GitHub Pages root domain
 
 def clean_output():
     if os.path.exists(OUTPUT_DIR):

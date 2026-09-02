@@ -7,9 +7,15 @@
         <span class="category-tag">{{ post.category }}</span>
         {% endif %}
         <h1>{{ post.title }}</h1>
-        {% if post.display_date %}
-        <time datetime="{{ post.date }}">{{ post.display_date }}</time>
-        {% endif %}
+        <div class="post-meta">
+            {% if post.display_date %}
+            <time datetime="{{ post.date }}">{{ post.display_date }}</time>
+            {% endif %}
+            {% if post.reading_time %}
+            <span class="meta-separator">&bull;</span>
+            <span class="reading-time">{{ post.reading_time }} min read</span>
+            {% endif %}
+        </div>
     </header>
     
     <div class="prose">
