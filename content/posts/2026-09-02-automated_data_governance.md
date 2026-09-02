@@ -12,8 +12,6 @@ description: "How I built a custom PySpark scanner to automatically audit Micros
 featured: false
 ---
 
-# Automating Data Governance: Building a Code and Lineage Scanner in Microsoft Fabric
-
 ## The Problem with Manual Governance
 
 If you manage a growing data engineering environment, you eventually hit a scaling problem. You establish development standards—mandatory logging functions, parameter naming conventions, data retention checks, and strict architectural patterns—but enforcing them becomes a bottleneck.
