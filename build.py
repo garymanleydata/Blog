@@ -2,6 +2,7 @@ import os
 import shutil
 import yaml
 import markdown
+import re
 from jinja2 import Environment, FileSystemLoader
 from datetime import datetime
 
@@ -37,7 +38,9 @@ def parse_markdown_file(filepath):
     return meta, html
 
 def slugify(text):
-    return text.lower().replace(' ', '-').replace(/[^\w-]+/g, '')
+    text = text.lower().replace(' ', '-')
+    # Remove any characters that are not word characters or hyphens
+    return re.sub(r'[^\w\-]', '', text)
 
 def build_site():
     print("Starting build...")
@@ -50,34 +53,35 @@ def build_site():
     posts = []
     categories = {}
     
-    for filename in os.listdir(POSTS_DIR):
-        if not filename.endswith('.md'):
-            continue
+    if os.path.exists(POSTS_DIR):
+        for filename in os.listdir(POSTS_DIR):
+            if not filename.endswith('.md'):
+                continue
+                
+            filepath = os.path.join(POSTS_DIR, filename)
+            meta, html = parse_markdown_file(filepath)
             
-        filepath = os.path.join(POSTS_DIR, filename)
-        meta, html = parse_markdown_file(filepath)
-        
-        # Extract slug from filename (assuming YYYY-MM-DD-slug.md)
-        slug = filename[11:-3] 
-        meta['slug'] = slug
-        meta['url'] = f"/articles/{slug}/"
-        meta['html'] = html
-        
-        # Format date for display
-        if 'date' in meta:
-            if isinstance(meta['date'], str):
-                meta['date_obj'] = datetime.strptime(meta['date'], '%Y-%m-%d')
-            else:
-                meta['date_obj'] = meta['date']
-            meta['display_date'] = meta['date_obj'].strftime('%d %B %Y')
+            # Extract slug from filename (assuming YYYY-MM-DD-slug.md)
+            slug = filename[11:-3] 
+            meta['slug'] = slug
+            meta['url'] = f"/articles/{slug}/"
+            meta['html'] = html
             
-        posts.append(meta)
-        
-        # Aggregate categories
-        category = meta.get('category', 'Uncategorised')
-        if category not in categories:
-            categories[category] = []
-        categories[category].append(meta)
+            # Format date for display
+            if 'date' in meta:
+                if isinstance(meta['date'], str):
+                    meta['date_obj'] = datetime.strptime(meta['date'], '%Y-%m-%d')
+                else:
+                    meta['date_obj'] = meta['date']
+                meta['display_date'] = meta['date_obj'].strftime('%d %B %Y')
+                
+            posts.append(meta)
+            
+            # Aggregate categories
+            category = meta.get('category', 'Uncategorised')
+            if category not in categories:
+                categories[category] = []
+            categories[category].append(meta)
 
     # Sort posts by date descending
     posts.sort(key=lambda x: x.get('date_obj', datetime.min), reverse=True)
