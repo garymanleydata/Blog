@@ -2,7 +2,6 @@
 {% block title %}{{ post.title }} - Data Leadership{% endblock %}
 
 {% block content %}
-<!-- Prism syntax highlighting stylesheet -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
 
 <article class="post-content">
@@ -25,9 +24,19 @@
     <div class="prose">
         {{ post.html | safe }}
     </div>
+
+    {% if post.tag_objects %}
+    <footer class="post-tags-container">
+        <span class="tags-label">Tagged:</span>
+        <div class="tag-pills">
+            {% for tag in post.tag_objects %}
+            <a href="{{ tag.url }}" class="tag-pill">{{ tag.name }}</a>
+            {% endfor %}
+        </div>
+    </footer>
+    {% endif %}
 </article>
 
-<!-- Prism syntax highlighting script -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
 {% endblock %}

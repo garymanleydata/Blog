@@ -174,3 +174,43 @@ p code, li code {
     .site-nav a { margin-left: 0; margin-right: 20px; }
     h1 { font-size: 2rem; }
 }
+
+/* Tags Footer & Badges */
+.post-tags-container {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.tags-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.tag-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.tag-pill {
+    background-color: var(--bg-offset);
+    border: 1px solid var(--border);
+    color: var(--text-main);
+    font-size: 0.85rem;
+    padding: 0.25rem 0.65rem;
+    border-radius: 9999px;
+    text-decoration: none;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.tag-pill:hover {
+    background-color: var(--border);
+    color: var(--text-main);
+    text-decoration: none;
+}

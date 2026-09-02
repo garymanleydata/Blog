@@ -15,7 +15,7 @@ TEMPLATE_DIR = 'templates'
 STATIC_DIR = 'static'
 OUTPUT_DIR = '_site'
 BASE_PATH = '/Blog'
-SITE_URL = 'https://garymanleydata.github.io'  # Set to your GitHub Pages root domain
+SITE_URL = 'https://garymanleydata.github.io'
 
 def clean_output():
     if os.path.exists(OUTPUT_DIR):
@@ -46,7 +46,7 @@ def parse_markdown_file(filepath):
     return meta, html
 
 def slugify(text):
-    text = text.lower().replace(' ', '-')
+    text = text.lower().strip().replace(' ', '-')
     return re.sub(r'[^\w\-]', '', text)
 
 def build_site():
@@ -58,9 +58,9 @@ def build_site():
     
     posts = []
     categories = {}
+    tags_map = {}
     sitemap_pages = []
     
-    # Track home and main listings in sitemap
     sitemap_pages.append({'url': f"{BASE_PATH}/", 'lastmod': datetime.today().strftime('%Y-%m-%d')})
     sitemap_pages.append({'url': f"{BASE_PATH}/articles/", 'lastmod': datetime.today().strftime('%Y-%m-%d')})
 
@@ -92,7 +92,28 @@ def build_site():
                 meta['display_date'] = ''
                 meta['rss_date'] = ''
                 meta['iso_date'] = ''
+            
+            # Process Tags
+            raw_tags = meta.get('tags', [])
+            if isinstance(raw_tags, str):
+                raw_tags = [raw_tags]
+            
+            tag_objects = []
+            for tag in raw_tags:
+                tag_name = str(tag).strip()
+                tag_slug = slugify(tag_name)
+                tag_obj = {
+                    'name': tag_name,
+                    'slug': tag_slug,
+                    'url': f"{BASE_PATH}/tags/{tag_slug}/"
+                }
+                tag_objects.append(tag_obj)
                 
+                if tag_name not in tags_map:
+                    tags_map[tag_name] = {'name': tag_name, 'slug': tag_slug, 'posts': []}
+                tags_map[tag_name]['posts'].append(meta)
+                
+            meta['tag_objects'] = tag_objects
             posts.append(meta)
             
             # Aggregate categories
@@ -147,6 +168,19 @@ def build_site():
             f.write(html_out)
         sitemap_pages.append({'url': f"{BASE_PATH}/topics/{cat_slug}/", 'lastmod': datetime.today().strftime('%Y-%m-%d')})
 
+    # Generate Tag Pages
+    tag_template = env.get_template('tag.html')
+    for tag_name, tag_data in tags_map.items():
+        tag_slug = tag_data['slug']
+        tag_posts = tag_data['posts']
+        tag_posts.sort(key=lambda x: x.get('date_obj', datetime.min), reverse=True)
+        tag_dir = os.path.join(OUTPUT_DIR, 'tags', tag_slug)
+        os.makedirs(tag_dir, exist_ok=True)
+        html_out = tag_template.render(tag=tag_name, posts=tag_posts, base_path=BASE_PATH)
+        with open(os.path.join(tag_dir, 'index.html'), 'w', encoding='utf-8') as f:
+            f.write(html_out)
+        sitemap_pages.append({'url': f"{BASE_PATH}/tags/{tag_slug}/", 'lastmod': datetime.today().strftime('%Y-%m-%d')})
+
     # Generate About Page
     about_path = os.path.join(PAGES_DIR, 'about.md')
     if os.path.exists(about_path):
@@ -177,7 +211,7 @@ def build_site():
     with open(os.path.join(OUTPUT_DIR, 'sitemap.xml'), 'w', encoding='utf-8') as f:
         f.write(sitemap_out)
 
-    print(f"Build complete. Generated {len(posts)} posts, rss.xml, and sitemap.xml.")
+    print(f"Build complete. Generated {len(posts)} posts, {len(tags_map)} tag pages, rss.xml, and sitemap.xml.")
 
 if __name__ == '__main__':
     build_site()
