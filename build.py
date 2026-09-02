@@ -13,6 +13,7 @@ PAGES_DIR = os.path.join(CONTENT_DIR, 'pages')
 TEMPLATE_DIR = 'templates'
 STATIC_DIR = 'static'
 OUTPUT_DIR = '_site'
+BASE_PATH = '/Blog'
 
 def clean_output():
     if os.path.exists(OUTPUT_DIR):
@@ -64,7 +65,7 @@ def build_site():
             # Extract slug from filename (assuming YYYY-MM-DD-slug.md)
             slug = filename[11:-3] 
             meta['slug'] = slug
-            meta['url'] = f"/articles/{slug}/"
+            meta['url'] = f"{BASE_PATH}/articles/{slug}/"
             meta['html'] = html
             
             # Format date for display
@@ -91,7 +92,7 @@ def build_site():
     for post in posts:
         post_dir = os.path.join(OUTPUT_DIR, 'articles', post['slug'])
         os.makedirs(post_dir, exist_ok=True)
-        html_out = article_template.render(post=post)
+        html_out = article_template.render(post=post, base_path=BASE_PATH)
         with open(os.path.join(post_dir, 'index.html'), 'w', encoding='utf-8') as f:
             f.write(html_out)
 
@@ -102,14 +103,15 @@ def build_site():
     html_out = index_template.render(
         featured_posts=featured_posts, 
         latest_posts=latest_posts,
-        categories=categories.keys()
+        categories=categories.keys(),
+        base_path=BASE_PATH
     )
     with open(os.path.join(OUTPUT_DIR, 'index.html'), 'w', encoding='utf-8') as f:
         f.write(html_out)
 
     # Generate Main Articles List
     list_template = env.get_template('list.html')
-    html_out = list_template.render(title="All Articles", posts=posts)
+    html_out = list_template.render(title="All Articles", posts=posts, base_path=BASE_PATH)
     articles_dir = os.path.join(OUTPUT_DIR, 'articles')
     os.makedirs(articles_dir, exist_ok=True)
     with open(os.path.join(articles_dir, 'index.html'), 'w', encoding='utf-8') as f:
@@ -123,7 +125,7 @@ def build_site():
         cat_posts.sort(key=lambda x: x.get('date_obj', datetime.min), reverse=True)
         cat_dir = os.path.join(OUTPUT_DIR, 'topics', cat_slug)
         os.makedirs(cat_dir, exist_ok=True)
-        html_out = category_template.render(category=cat, posts=cat_posts)
+        html_out = category_template.render(category=cat, posts=cat_posts, base_path=BASE_PATH)
         with open(os.path.join(cat_dir, 'index.html'), 'w', encoding='utf-8') as f:
             f.write(html_out)
 
@@ -133,7 +135,7 @@ def build_site():
         meta, html = parse_markdown_file(about_path)
         about_dir = os.path.join(OUTPUT_DIR, 'about')
         os.makedirs(about_dir, exist_ok=True)
-        html_out = article_template.render(post={'title': 'About', 'html': html})
+        html_out = article_template.render(post={'title': 'About', 'html': html}, base_path=BASE_PATH)
         with open(os.path.join(about_dir, 'index.html'), 'w', encoding='utf-8') as f:
             f.write(html_out)
 
