@@ -63,6 +63,22 @@ h3 { font-size: 1.3rem; margin-top: 1.5rem; }
 p { margin-bottom: 1.2rem; }
 time { color: var(--text-muted); font-size: 0.9rem; }
 
+/* Post Metadata */
+.post-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    margin-bottom: 2rem;
+}
+.meta-separator {
+    color: var(--text-muted);
+}
+.reading-time {
+    color: var(--text-muted);
+}
+
 /* Components */
 .category-tag {
     display: inline-block;

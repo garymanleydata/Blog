@@ -5,6 +5,7 @@ import markdown
 import re
 from jinja2 import Environment, FileSystemLoader
 from datetime import datetime
+from email.utils import format_datetime
 
 # Configuration
 CONTENT_DIR = 'content'
@@ -14,6 +15,7 @@ TEMPLATE_DIR = 'templates'
 STATIC_DIR = 'static'
 OUTPUT_DIR = '_site'
 BASE_PATH = '/Blog'
+SITE_URL = 'https://yourusername.github.io'  # Set to your GitHub Pages root domain
 
 def clean_output():
     if os.path.exists(OUTPUT_DIR):
@@ -23,24 +25,28 @@ def clean_output():
 def copy_static():
     shutil.copytree(STATIC_DIR, os.path.join(OUTPUT_DIR, 'static'))
 
+def calculate_reading_time(text, words_per_minute=200):
+    words = len(re.findall(r'\w+', text))
+    return max(1, round(words / words_per_minute))
+
 def parse_markdown_file(filepath):
     with open(filepath, 'r', encoding='utf-8') as f:
         content = f.read()
     
     if content.startswith('---'):
         parts = content.split('---', 2)
-        meta = yaml.safe_load(parts[1])
+        meta = yaml.safe_load(parts[1]) or {}
         body = parts[2]
     else:
         meta = {}
         body = content
         
     html = markdown.markdown(body, extensions=['fenced_code', 'tables'])
+    meta['reading_time'] = calculate_reading_time(body)
     return meta, html
 
 def slugify(text):
     text = text.lower().replace(' ', '-')
-    # Remove any characters that are not word characters or hyphens
     return re.sub(r'[^\w\-]', '', text)
 
 def build_site():
@@ -50,10 +56,15 @@ def build_site():
     
     env = Environment(loader=FileSystemLoader(TEMPLATE_DIR))
     
-    # Load Posts
     posts = []
     categories = {}
+    sitemap_pages = []
     
+    # Track home and main listings in sitemap
+    sitemap_pages.append({'url': f"{BASE_PATH}/", 'lastmod': datetime.today().strftime('%Y-%m-%d')})
+    sitemap_pages.append({'url': f"{BASE_PATH}/articles/", 'lastmod': datetime.today().strftime('%Y-%m-%d')})
+
+    # Load Posts
     if os.path.exists(POSTS_DIR):
         for filename in os.listdir(POSTS_DIR):
             if not filename.endswith('.md'):
@@ -62,19 +73,25 @@ def build_site():
             filepath = os.path.join(POSTS_DIR, filename)
             meta, html = parse_markdown_file(filepath)
             
-            # Extract slug from filename (assuming YYYY-MM-DD-slug.md)
             slug = filename[11:-3] 
             meta['slug'] = slug
             meta['url'] = f"{BASE_PATH}/articles/{slug}/"
             meta['html'] = html
             
-            # Format date for display
+            # Format dates
             if 'date' in meta:
                 if isinstance(meta['date'], str):
                     meta['date_obj'] = datetime.strptime(meta['date'], '%Y-%m-%d')
                 else:
                     meta['date_obj'] = meta['date']
                 meta['display_date'] = meta['date_obj'].strftime('%d %B %Y')
+                meta['rss_date'] = format_datetime(datetime.combine(meta['date_obj'], datetime.min.time()))
+                meta['iso_date'] = meta['date_obj'].strftime('%Y-%m-%d')
+            else:
+                meta['date_obj'] = datetime.min
+                meta['display_date'] = ''
+                meta['rss_date'] = ''
+                meta['iso_date'] = ''
                 
             posts.append(meta)
             
@@ -95,6 +112,7 @@ def build_site():
         html_out = article_template.render(post=post, base_path=BASE_PATH)
         with open(os.path.join(post_dir, 'index.html'), 'w', encoding='utf-8') as f:
             f.write(html_out)
+        sitemap_pages.append({'url': post['url'], 'lastmod': post.get('iso_date')})
 
     # Generate Homepage
     index_template = env.get_template('index.html')
@@ -121,13 +139,13 @@ def build_site():
     category_template = env.get_template('category.html')
     for cat, cat_posts in categories.items():
         cat_slug = slugify(cat)
-        # Sort category posts by date
         cat_posts.sort(key=lambda x: x.get('date_obj', datetime.min), reverse=True)
         cat_dir = os.path.join(OUTPUT_DIR, 'topics', cat_slug)
         os.makedirs(cat_dir, exist_ok=True)
         html_out = category_template.render(category=cat, posts=cat_posts, base_path=BASE_PATH)
         with open(os.path.join(cat_dir, 'index.html'), 'w', encoding='utf-8') as f:
             f.write(html_out)
+        sitemap_pages.append({'url': f"{BASE_PATH}/topics/{cat_slug}/", 'lastmod': datetime.today().strftime('%Y-%m-%d')})
 
     # Generate About Page
     about_path = os.path.join(PAGES_DIR, 'about.md')
@@ -138,8 +156,28 @@ def build_site():
         html_out = article_template.render(post={'title': 'About', 'html': html}, base_path=BASE_PATH)
         with open(os.path.join(about_dir, 'index.html'), 'w', encoding='utf-8') as f:
             f.write(html_out)
+        sitemap_pages.append({'url': f"{BASE_PATH}/about/", 'lastmod': datetime.today().strftime('%Y-%m-%d')})
 
-    print(f"Build complete. {len(posts)} posts generated.")
+    # Generate RSS Feed
+    rss_template = env.get_template('rss.xml')
+    rss_out = rss_template.render(
+        posts=posts[:20],
+        site_url=SITE_URL,
+        base_path=BASE_PATH
+    )
+    with open(os.path.join(OUTPUT_DIR, 'rss.xml'), 'w', encoding='utf-8') as f:
+        f.write(rss_out)
+
+    # Generate Sitemap
+    sitemap_template = env.get_template('sitemap.xml')
+    sitemap_out = sitemap_template.render(
+        pages=sitemap_pages,
+        site_url=SITE_URL
+    )
+    with open(os.path.join(OUTPUT_DIR, 'sitemap.xml'), 'w', encoding='utf-8') as f:
+        f.write(sitemap_out)
+
+    print(f"Build complete. Generated {len(posts)} posts, rss.xml, and sitemap.xml.")
 
 if __name__ == '__main__':
     build_site()
