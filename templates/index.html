@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="intro">
+    <h1>Bridging Technical Reality and Data Leadership</h1>
+    <p class="lead">Exploring how data, technology, people, and organisational strategy come together. Practical insights from real-world data management and engineering.</p>
+</section>
+
+{% if featured_posts %}
+<section class="featured">
+    <h2>Featured</h2>
+    <div class="article-grid">
+        {% for post in featured_posts %}
+        <article class="card featured-card">
+            <span class="category-tag">{{ post.category }}</span>
+            <h3><a href="{{ post.url }}">{{ post.title }}</a></h3>
+            <p>{{ post.description }}</p>
+        </article>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<section class="latest">
+    <h2>Latest Articles</h2>
+    <ul class="article-list">
+        {% for post in latest_posts %}
+        <li>
+            <time datetime="{{ post.date }}">{{ post.display_date }}</time>
+            <h3><a href="{{ post.url }}">{{ post.title }}</a></h3>
+            <p>{{ post.description }}</p>
+        </li>
+        {% endfor %}
+    </ul>
+    <a href="/articles/" class="view-all">View all articles &rarr;</a>
+</section>
+{% endblock %}

@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}{{ post.title }} - Data Leadership{% endblock %}
+{% block content %}
+<article class="post-content">
+    <header class="post-header">
+        {% if post.category %}
+        <span class="category-tag">{{ post.category }}</span>
+        {% endif %}
+        <h1>{{ post.title }}</h1>
+        {% if post.display_date %}
+        <time datetime="{{ post.date }}">{{ post.display_date }}</time>
+        {% endif %}
+    </header>
+    
+    <div class="prose">
+        {{ post.html | safe }}
+    </div>
+</article>
+{% endblock %}
