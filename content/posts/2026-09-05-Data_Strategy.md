@@ -3,9 +3,9 @@ title: "Data Strategy: From Strategy to Practice"
 date: 2026-09-05
 category: "Data Strategy"
 tags:
-* Data Strategy
-* Data Engineering
-* Data Leadership
+  - Data Strategy
+  - Data Engineering
+  - Data Leadership
 description: "Some thoughts on Data Strategy, what I am learning from the Summer School, and how I can apply it as a Data Lead."
 featured: false
 ---
